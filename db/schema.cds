@@ -27,4 +27,3 @@ type Token {
     password: String;
   }
 }
-
