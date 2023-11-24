@@ -6,7 +6,7 @@ service AssignService {
 
   entity SessionAssignments as projection on db.Assignments
   actions {
-    action token() returns db.Token
+    action credentials() returns db.Credentials
   }
 
 }

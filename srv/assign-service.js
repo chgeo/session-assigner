@@ -9,19 +9,18 @@ class AssignService extends cds.ApplicationService { init(){
   this.before ('CREATE', SessionAssignments, autoFillName)
 
   // fill in unique token
-  this.after ('CREATE', SessionAssignments, async ({ name, session_ID }) => {
-    const { maxNumber } = await SELECT.one('max(numberToken) as maxNumber').from(Assignments).byKey({ session_ID })
-    const newToken = maxNumber + 1
-    await UPDATE(Assignments).byKey({ name, session_ID }).with({ numberToken: newToken })
+  this.after ('CREATE', SessionAssignments, async ({ name, session_ID }, req) => {
+    const { maxNumber } = await SELECT.one('max(token) as maxNumber').from(Assignments).byKey({ session_ID })
+    const token = maxNumber + 1
+    await UPDATE(Assignments).byKey({ name, session_ID }).with({ token })
+    return req.reply({ name, session_ID, token })
   })
 
-  this.on ('token', SessionAssignments, async req => {
+  this.on ('credentials', SessionAssignments, async req => {
     const { name, session_ID } = req.params[0]
     const assignment = await SELECT.one.from(Assignments).byKey({ name, session_ID })
     if (!assignment)  return req.reject(404, `No such assignment '${name}' in session ${session_ID}`)
-    const token = assignment.numberToken
-
-    // console.log('>> token for', name, assignment)
+    const { token } = assignment
 
     const session = await SELECT.one.from(Sessions).byKey({ID: session_ID})
     if (!session)  return req.reject(404, `No session data for ${session_ID}`)
@@ -32,10 +31,8 @@ class AssignService extends cds.ApplicationService { init(){
     // to = parseInt(to)
     return {
       token,
-      credentials: {
-        user: session.userPattern.replace('<token>', token),
-        password: session.passwordPattern.replace('<token>', token)
-      }
+      user: session.userPattern.replace('<token>', token),
+      password: session.passwordPattern.replace('<token>', token)
     }
   })
 

@@ -12,18 +12,16 @@ entity Sessions {
 }
 
 @assert.unique: {
-  token: [ session, numberToken ]
+  token: [ session, token ]
 }
 entity Assignments {
   key name: String;
   key session: Association to Sessions;
-  numberToken: Integer;
+  token: Integer;
 }
 
-type Token {
+type Credentials {
   token: Integer;
-  credentials: {
-    user: String;
-    password: String;
-  }
+  user: String;
+  password: String;
 }
