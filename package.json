@@ -20,7 +20,7 @@
   "scripts": {
     "build": "npx cds-typer '*' --outputDirectory @cds-models",
     "start": "cds-serve",
-    "test": "npx jest"
+    "test": "npx -y jest --silent"
   },
   "imports": {
     "#cds-models/*": "./@cds-models/*/index.js"
