@@ -4,6 +4,10 @@
 POST http://localhost:4004/api/admin/Sessions
 Content-Type: application/json
 
+{
+  "numberRange": "2 - 3"
+}
+
 
 ### --- Create assignment
 # @name createAssignment

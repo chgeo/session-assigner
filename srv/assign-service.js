@@ -10,8 +10,16 @@ class AssignService extends cds.ApplicationService { init(){
 
   // fill in unique token
   this.after ('CREATE', SessionAssignments, async ({ name, session_ID }, req) => {
-    const { maxNumber } = await SELECT.one('max(token) as maxNumber').from(Assignments).byKey({ session_ID })
-    const token = maxNumber + 1
+    const session = await SELECT.one.from(Sessions).byKey({ID: session_ID})
+    if (!session)  return req.reject(404, `No session data for ${session_ID}`)
+    let [from,to] = session.numberRange.split('-')
+    from = parseInt(from)
+    to = parseInt(to)
+
+    const { max } = await SELECT.one('max(token) as max').from(Assignments).byKey({ session_ID })
+    if (max >= to)  return req.reject(400, `No more numbers: reached allowed limit of ${to}`)
+
+    const token = max ? max + 1 : from
     await UPDATE(Assignments).byKey({ name, session_ID }).with({ token })
     return req.reply({ name, session_ID, token })
   })
@@ -19,16 +27,11 @@ class AssignService extends cds.ApplicationService { init(){
   this.on ('credentials', SessionAssignments, async req => {
     const { name, session_ID } = req.params[0]
     const assignment = await SELECT.one.from(Assignments).byKey({ name, session_ID })
-    if (!assignment)  return req.reject(404, `No such assignment '${name}' in session ${session_ID}`)
+    if (!assignment)  return req.reject(404, `No such assignment '${name}' in session '${session_ID}'`)
     const { token } = assignment
 
     const session = await SELECT.one.from(Sessions).byKey({ID: session_ID})
-    if (!session)  return req.reject(404, `No session data for ${session_ID}`)
-    if (!session.userPattern)  return req.reject(404, `No userPattern in session ${session_ID}`)
-    if (!session.passwordPattern)  return req.reject(404, `No passwordPattern in session ${session_ID}`)
-    // let [from,to] = session.numberRange.split('-')
-    // from = parseInt(from)
-    // to = parseInt(to)
+    if (!session)  return req.reject(404, `No session data for '${session_ID}'`)
     return {
       token,
       user: session.userPattern.replace('<token>', token),
