@@ -11,13 +11,17 @@ entity Sessions : cuid {
   assignments: Composition of many Assignments on assignments.session = $self;
 }
 
+@assert.unique: {
+  token: [ session, numberToken ]
+}
 entity Assignments {
   key name: String;
-  session: Association to Sessions;
+  key session: Association to Sessions;
+  numberToken: Integer;
 }
 
 type Token {
-  token: String;
+  token: Integer;
   credentials: {
     user: String;
     password: String;
