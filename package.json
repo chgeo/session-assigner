@@ -10,11 +10,16 @@
     "express": "^4"
   },
   "devDependencies": {
+    "@cap-js/cds-typer": ">=0.1",
     "@cap-js/sqlite": "^1",
-    "@cap-js/cds-typer": ">=0.1"
+    "axios": "^1.6.2",
+    "chai": "^4.3.10",
+    "chai-as-promised": "^7.1.1",
+    "chai-subset": "^1.6.0"
   },
   "scripts": {
-    "start": "cds-serve"
+    "start": "cds-serve",
+    "test": "npx jest"
   },
   "imports": {
     "#cds-models/*": "./@cds-models/*/index.js"

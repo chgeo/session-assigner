@@ -22,10 +22,10 @@ Content-Type: application/json
 }
 
 
-### --- Get token for assignment
-# @name getToken
+### --- Get credentials for assignment
+# @name getCredentials
 
 @assignmentName = {{createAssignment.response.body.$.name}}
 
-POST http://localhost:4004/api/assign/SessionAssignments(name='{{assignmentName}}',session_ID='{{sessionID}}')/credentials
+GET http://localhost:4004/api/assign/SessionAssignments(name='{{assignmentName}}',session_ID='{{sessionID}}')/credentials
 Content-Type: application/json
