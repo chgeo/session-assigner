@@ -14,7 +14,7 @@ class AssignService extends cds.ApplicationService { init(){
 
   // fill in unique token
   this.after ('CREATE', SessionAssignments, async ({ name, session_ID }) => {
-    const { maxNumber } = await SELECT.one('max(numberToken) as maxNumber').from(Assignments)
+    const { maxNumber } = await SELECT.one('max(numberToken) as maxNumber').from(Assignments).byKey({ session_ID })
     const newToken = maxNumber + 1
     await UPDATE(Assignments).byKey({ name, session_ID }).with({ numberToken: newToken })
   })
