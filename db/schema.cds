@@ -3,11 +3,11 @@ namespace sap.cap.assignments;
 using { cuid } from '@sap/cds/common';
 
 entity Sessions : cuid {
-  name: String;
+  name: String @mandatory;
   descr: String;
-  numberRange: String;
-  userPattern: String;
-  passwordPattern: String;
+  numberRange: String default '1-30';
+  userPattern: String default 'user-<token>@email';
+  passwordPattern: String default 'Abc-<token>';
   assignments: Composition of many Assignments on assignments.session = $self;
 }
 

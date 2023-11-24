@@ -1,14 +1,32 @@
-###
+# @sessionID = "68824bc9-bddd-476a-8a30-65c147030a5b"
+
+### Create session
+# @name createSession
+
+POST http://localhost:4004/rest/admin/Sessions
+Content-Type: application/json
+
+{
+  "name": "Session",
+  "descr": "A session"
+}
+
+### Create assignment
+# @name createAssignment
+
+@sessionID = {{createSession.response.body.$.ID}}
 
 POST http://localhost:4004/rest/assign/SessionAssignments
 Content-Type: application/json
 
 {
-  "session_ID": "68824bc9-bddd-476a-8a30-65c147030a5b"
+  "session_ID": "{{sessionID}}"
 }
 
 
 ### get token for assignment
 
-POST http://localhost:4004/rest/assign/SessionAssignments(name='foo3',session_ID=68824bc9-bddd-476a-8a30-65c147030a5b)/token
+@assignmentName = {{createAssignment.response.body.$.name}}
+
+POST http://localhost:4004/rest/assign/SessionAssignments(name='{{assignmentName}}',session_ID='{{sessionID}}')/token
 Content-Type: application/json

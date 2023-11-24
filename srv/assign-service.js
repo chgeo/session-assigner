@@ -22,18 +22,20 @@ class AssignService extends cds.ApplicationService { init(){
   })
 
   this.on ('token', SessionAssignments, async req => {
-    const { name } = req.params[0]
-    const assignment = await SELECT.from(Assignments, { name })
-    if (!assignment)  return req.reject(404, 'No such assignment for ' + name)
+    const { name, session_ID } = req.params[0]
+    const assignment = await SELECT.one.from(Assignments).byKey({ name, session_ID })
+    if (!assignment)  return req.reject(404, `No such assignment '${name}' in session ${session_ID}`)
+    const token = assignment.numberToken
 
-    console.log('>> token for', name, assignment)
+    // console.log('>> token for', name, assignment)
 
-    const session = await SELECT.from(Sessions, {ID: assignment.session_ID})
-
-    let [from,to] = session.numberRange.split('-')
-    from = parseInt(from)
-    to = parseInt(to)
-    const token = randomInt(from, to)
+    const session = await SELECT.one.from(Sessions).byKey({ID: session_ID})
+    if (!session)  return req.reject(404, `No session data for ${session_ID}`)
+    if (!session.userPattern)  return req.reject(404, `No userPattern in session ${session_ID}`)
+    if (!session.passwordPattern)  return req.reject(404, `No passwordPattern in session ${session_ID}`)
+    // let [from,to] = session.numberRange.split('-')
+    // from = parseInt(from)
+    // to = parseInt(to)
     return {
       token,
       credentials: {
@@ -45,11 +47,5 @@ class AssignService extends cds.ApplicationService { init(){
 
   return super.init()
 }}
-
-function randomInt(min, max) {
-  min = Math.ceil(min);
-  max = Math.floor(max);
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
 
 module.exports = { AssignService }
