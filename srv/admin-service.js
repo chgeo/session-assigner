@@ -12,7 +12,6 @@ class AdminService extends cds.ApplicationService { init(){
 }}
 
 function autoFillID(res) {
-  console.log('>>', res.data)
   if (!res.data.ID) {
     res.data.ID = 'session-' + cds.utils.uuid().split('-')[0]
   }

@@ -3,7 +3,7 @@
 ### Create session
 # @name createSession
 
-POST http://localhost:4004/rest/admin/Sessions
+POST http://localhost:4004/api/admin/Sessions
 Content-Type: application/json
 
 ### Create assignment
@@ -11,7 +11,7 @@ Content-Type: application/json
 
 @sessionID = {{createSession.response.body.$.ID}}
 
-POST http://localhost:4004/rest/assign/SessionAssignments
+POST http://localhost:4004/api/assign/SessionAssignments
 Content-Type: application/json
 
 {
@@ -23,5 +23,5 @@ Content-Type: application/json
 
 @assignmentName = {{createAssignment.response.body.$.name}}
 
-POST http://localhost:4004/rest/assign/SessionAssignments(name='{{assignmentName}}',session_ID='{{sessionID}}')/token
+POST http://localhost:4004/api/assign/SessionAssignments(name='{{assignmentName}}',session_ID='{{sessionID}}')/token
 Content-Type: application/json
