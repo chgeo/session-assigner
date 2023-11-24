@@ -6,11 +6,6 @@
 POST http://localhost:4004/rest/admin/Sessions
 Content-Type: application/json
 
-{
-  "name": "Session",
-  "descr": "A session"
-}
-
 ### Create assignment
 # @name createAssignment
 

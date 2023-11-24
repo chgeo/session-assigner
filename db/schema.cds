@@ -2,8 +2,8 @@ namespace sap.cap.assignments;
 
 using { cuid } from '@sap/cds/common';
 
-entity Sessions : cuid {
-  name: String @mandatory;
+entity Sessions {
+  key ID: String;
   descr: String;
   numberRange: String default '1-30';
   userPattern: String default 'user-<token>@email';

@@ -6,11 +6,7 @@ class AssignService extends cds.ApplicationService { init(){
   const { Assignments, Sessions } = require('#cds-models/sap/cap/assignments')
 
   // auto-fill name w/ a unique value, just to ease testing
-  this.before ('CREATE', SessionAssignments, async res => {
-    if (!res.data.name) {
-      res.data.name = cds.utils.uuid()
-    }
-  })
+  this.before ('CREATE', SessionAssignments, autoFillName)
 
   // fill in unique token
   this.after ('CREATE', SessionAssignments, async ({ name, session_ID }) => {
@@ -45,5 +41,11 @@ class AssignService extends cds.ApplicationService { init(){
 
   return super.init()
 }}
+
+function autoFillName(res) {
+  if (!res.data.name) {
+    res.data.name = 'name-' + cds.utils.uuid().split('-')[0]
+  }
+}
 
 module.exports = { AssignService }
