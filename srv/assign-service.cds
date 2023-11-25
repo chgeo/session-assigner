@@ -4,6 +4,10 @@ using { sap.cap } from '../db/schema';
 @path: '/api/assign'
 service AssignService {
 
+  @Capabilities : { ReadRestrictions : {
+    Readable:false,
+    ReadByKeyRestrictions : { Readable:true },
+  }, }
   entity SessionAssignments as projection on cap.Assignments
     actions {
       function credentials() returns Creds

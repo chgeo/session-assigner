@@ -19,7 +19,7 @@ class AssignService extends cds.ApplicationService { init(){
   // fill in unique token
   this.after ('CREATE', SessionAssignments, async ({ name, session_ID }, req) => {
     const session = await SELECT.one.from(Sessions).byKey({ID: session_ID})
-    if (!session)  return req.reject(404, `No session data for ${session_ID}`)
+    if (!session)  return req.reject(404, `No such session: ${session_ID}`)
     const { rangeFrom, rangeTo } = session
 
     const { max } = await SELECT.one('max(token) as max').from(Assignments).byKey({ session_ID }).forUpdate()
