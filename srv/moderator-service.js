@@ -1,8 +1,8 @@
 const cds = require('@sap/cds')
 
-class AdminService extends cds.ApplicationService { init(){
+class ModeratorService extends cds.ApplicationService { init(){
 
-  const { Sessions } = require('#cds-models/AdminService')
+  const { Sessions } = require('#cds-models/ModeratorService')
 
   // auto-fill name w/ a unique value, just to ease testing
   this.before ('CREATE', Sessions, ({ data }) => {
@@ -27,4 +27,4 @@ class AdminService extends cds.ApplicationService { init(){
   return super.init()
 }}
 
-module.exports = { AdminService }
+module.exports = { ModeratorService }

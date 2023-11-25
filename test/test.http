@@ -1,7 +1,7 @@
 ### --- Create session
 # @name createSession
 
-POST http://localhost:4004/api/admin/Sessions
+POST http://localhost:4004/api/moderator/Sessions
 Content-Type: application/json
 
 {

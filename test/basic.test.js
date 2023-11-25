@@ -5,7 +5,7 @@ describe('Basic flows', () => {
   const { GET, POST, expect } = cds.test (__dirname+'/..')
 
   test('create session, assignment, token', async () => {
-    const { data: session } = await POST(`/api/admin/Sessions`, {
+    const { data: session } = await POST(`/api/moderator/Sessions`, {
       ID: 'session1',
       rangeFrom: 2,
       rangeTo: 3
