@@ -5,7 +5,8 @@ using { cuid } from '@sap/cds/common';
 entity Sessions {
   key ID          : String;
   descr           : String;
-  numberRange     : String @assert.format:'\d+\s*-\s*\d+' default '1-30';
+  rangeFrom       : Integer default '1';
+  rangeTo         : Integer default '30';
   userPattern     : String @assert.format:'.*<token>.*' default 'user-<token>@email';
   passwordPattern : String @assert.format:'.*<token>.*' default 'Abc-<token>';
   assignments     : Composition of many Assignments

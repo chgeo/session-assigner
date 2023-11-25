@@ -7,7 +7,8 @@ describe('Basic flows', () => {
   test('create session, assignment, token', async () => {
     const { data: session } = await POST(`/api/admin/Sessions`, {
       ID: 'session1',
-      numberRange: '2-3'
+      rangeFrom: 2,
+      rangeTo: 3
     })
     expect(session).to.containSubset({ ID: 'session1' })
 

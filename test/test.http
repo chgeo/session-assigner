@@ -5,7 +5,8 @@ POST http://localhost:4004/api/admin/Sessions
 Content-Type: application/json
 
 {
-  "numberRange": "2 - 3"
+  "rangeFrom": 2,
+  "rangeTo": 3
 }
 
 

@@ -1,2 +1,2 @@
-ID,descr,numberRange,userPattern,passwordPattern
-TechEd-AD264,A TechEd hands-on session,1-30,user-<token>@email.test,Abc-<token>
+ID,descr,rangeFrom,rangeTo,userPattern,passwordPattern
+TechEd-AD264,A TechEd hands-on session,1,20,user-<token>@email.test,Abc-<token>

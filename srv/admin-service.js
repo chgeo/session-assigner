@@ -5,16 +5,20 @@ class AdminService extends cds.ApplicationService { init(){
   const { Sessions } = require('#cds-models/AdminService')
 
   // auto-fill name w/ a unique value, just to ease testing
-  this.before ('CREATE', Sessions, autoFillID)
+  this.before ('CREATE', Sessions, ({ data }) => {
+    const sessions = Array.isArray(data) ? data : [data]
+    for (const session of sessions) {
+      if (!session.ID) {
+        session.ID = 'session-' + cds.utils.uuid().split('-')[0]
+      }
+    }
+  })
 
   this.before ('CREATE', Sessions, async res => {
-    if (res.data.numberRange) {
-      const { numberRange } = res.data
-      let [from,to] = numberRange.split('-')
-      from = parseInt(from)
-      to = parseInt(to)
-      if (! (from < to) ) {
-        return res.reject(400, `Invalid number range ${numberRange}: ${from} must be lower than ${to}`)
+    const sessions = Array.isArray(res.data) ? res.data : [res.data]
+    for (const { rangeFrom, rangeTo } of sessions) {
+      if (! (rangeFrom < rangeTo) ) {
+        return res.reject(400, `Invalid number range: ${rangeFrom} must be lower than ${rangeTo}`)
       }
     }
   })
@@ -22,11 +26,5 @@ class AdminService extends cds.ApplicationService { init(){
 
   return super.init()
 }}
-
-function autoFillID(res) {
-  if (!res.data.ID) {
-    res.data.ID = 'session-' + cds.utils.uuid().split('-')[0]
-  }
-}
 
 module.exports = { AdminService }

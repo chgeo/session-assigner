@@ -6,20 +6,26 @@ class AssignService extends cds.ApplicationService { init(){
   const { Assignments, Sessions } = require('#cds-models/sap/cap')
 
   // auto-fill name w/ a unique value, just to ease testing
-  this.before ('CREATE', SessionAssignments, autoFillName)
+  this.before ('CREATE', SessionAssignments, ({ data }) => {
+    const assignments = Array.isArray(data) ? data : [data]
+    for (const assignment of assignments) {
+      if (!assignment.name) {
+        assignment.name = 'name-' + cds.utils.uuid().split('-')[0]
+      }
+    }
+  })
+
 
   // fill in unique token
   this.after ('CREATE', SessionAssignments, async ({ name, session_ID }, req) => {
     const session = await SELECT.one.from(Sessions).byKey({ID: session_ID})
     if (!session)  return req.reject(404, `No session data for ${session_ID}`)
-    let [from,to] = session.numberRange.split('-')
-    from = parseInt(from)
-    to = parseInt(to)
+    const { rangeFrom, rangeTo } = session
 
     const { max } = await SELECT.one('max(token) as max').from(Assignments).byKey({ session_ID })
-    if (max >= to)  return req.reject(400, `No more numbers: reached allowed limit of ${to}`)
+    if (max >= rangeTo)  return req.reject(400, `No more numbers: reached allowed limit of ${rangeTo}`)
 
-    const token = max ? max + 1 : from
+    const token = max ? max + 1 : rangeFrom
     await UPDATE(Assignments).byKey({ name, session_ID }).with({ token })
     return req.reply({ name, session_ID, token })
   })
@@ -41,11 +47,5 @@ class AssignService extends cds.ApplicationService { init(){
 
   return super.init()
 }}
-
-function autoFillName(res) {
-  if (!res.data.name) {
-    res.data.name = 'name-' + cds.utils.uuid().split('-')[0]
-  }
-}
 
 module.exports = { AssignService }
