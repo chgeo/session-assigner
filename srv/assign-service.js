@@ -22,7 +22,7 @@ class AssignService extends cds.ApplicationService { init(){
     if (!session)  return req.reject(404, `No session data for ${session_ID}`)
     const { rangeFrom, rangeTo } = session
 
-    const { max } = await SELECT.one('max(token) as max').from(Assignments).byKey({ session_ID })
+    const { max } = await SELECT.one('max(token) as max').from(Assignments).byKey({ session_ID }).forUpdate()
     if (max >= rangeTo)  return req.reject(400, `No more numbers: reached allowed limit of ${rangeTo}`)
 
     const token = max ? max + 1 : rangeFrom
