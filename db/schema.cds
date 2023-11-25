@@ -13,18 +13,11 @@ entity Sessions {
                       on assignments.session = $self;
 }
 
-@assert.unique:{ token:[
-  session,
-  token
-] }
+@assert.unique: {
+  token: [ session, token ]
+}
 entity Assignments {
   key name    : String;
   key session : Association to Sessions;
   token       : Integer;
-}
-
-type Credentials {
-  token    : Integer;
-  user     : String;
-  password : String;
 }

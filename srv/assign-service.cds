@@ -5,8 +5,13 @@ using { sap.cap } from '../db/schema';
 service AssignService {
 
   entity SessionAssignments as projection on cap.Assignments
-  actions {
-    function credentials() returns cap.Credentials
-  }
+    actions {
+      function credentials() returns Creds
+    }
 
+  type Creds {
+    token    : Integer;
+    user     : String;
+    password : String;
+  }
 }
