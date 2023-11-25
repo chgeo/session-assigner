@@ -1,8 +1,8 @@
 {
-  "name": "session-assigner",
+  "name": "session-management",
   "version": "1.0.0",
-  "description": "A simple CAP project.",
-  "repository": "<Add your repository here>",
+  "description": "Management for Hands-on Sessions",
+  "repository": "https://github.com/chgeo/session-management.git",
   "license": "UNLICENSED",
   "private": true,
   "dependencies": {
@@ -18,7 +18,7 @@
     "chai-subset": "^1.6.0"
   },
   "scripts": {
-    "build": "npx cds-typer '*' --outputDirectory @cds-models",
+    "build": "cds-typer '*' --outputDirectory @cds-models",
     "start": "cds-serve",
     "test": "npx -y jest --silent"
   },

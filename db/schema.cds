@@ -1,4 +1,4 @@
-namespace sap.cap.assignments;
+namespace sap.cap;
 
 using { cuid } from '@sap/cds/common';
 

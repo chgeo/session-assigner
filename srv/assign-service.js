@@ -3,7 +3,7 @@ const cds = require('@sap/cds')
 class AssignService extends cds.ApplicationService { init(){
 
   const { SessionAssignments } = require('#cds-models/AssignService')
-  const { Assignments, Sessions } = require('#cds-models/sap/cap/assignments')
+  const { Assignments, Sessions } = require('#cds-models/sap/cap')
 
   // auto-fill name w/ a unique value, just to ease testing
   this.before ('CREATE', SessionAssignments, autoFillName)
