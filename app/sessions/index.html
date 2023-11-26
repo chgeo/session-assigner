@@ -26,7 +26,10 @@
     Password pattern: <code>{{ session.passwordPattern }}</code> <br>
 
     <h5>Participant assignments</h5>
-    {{ freeSlots }} slots left
+    <div style="width: 100%; display: flex; justify-content: space-between;">
+      {{ freeSlots }} slots left
+      <a :href="`../assign/?session=${encodeURIComponent(session.ID)}`">New Assignment</a>
+    </div>
 
     <table id='assignments' class="hovering">
       <thead>
