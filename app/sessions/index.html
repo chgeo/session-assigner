@@ -7,7 +7,7 @@
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.prod.js"></script>
   <style>
-    .hovering tr:hover td { color: gold; cursor: pointer; }
+    .hovering tr:hover td { color: blue; cursor: pointer; }
     .assigned { background-color: #00d000;}
     .failed { color:red; }
     code { border: none !important; }
@@ -58,7 +58,7 @@ const app = Vue.createApp ({
 
   data() {
     return {
-      session_ID: new URL(location.href).searchParams.get('session') || 'TechEd-AD264',
+      session_ID: new URL(location.href).searchParams.get('session') ||  localStorage.getItem('session'),
       assignments: [],
       session: undefined,
       error: undefined
@@ -86,9 +86,7 @@ const app = Vue.createApp ({
           app.assignments[assignment.token - session.rangeFrom] = assignment
         }
 
-        const url = new URL(location.href)
-        url.searchParams.set('session', session_ID)
-        history.pushState(null, '', url)
+        localStorage.setItem('session', session_ID)
       } catch (e) {
         app.error = e.response.data.error ? e.response.data.error.message : e.response.data
       }

@@ -1,2 +1,3 @@
 ID,descr,rangeFrom,rangeTo,userPattern,passwordPattern
-TechEd-AD264,A TechEd hands-on session,1,5,user-<token>@email.test,Abc-<token>
+Test Session,A TechEd hands-on session,1,40,user-<token>@email.test,Abc-<token>
+CAP Hands-on,A session for CAP people,50,80,user-<token>@email.test,Abc-<token>

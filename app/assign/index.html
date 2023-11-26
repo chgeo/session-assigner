@@ -24,11 +24,15 @@
     </label>
     <input type="submit" value="Register" class="muted-button" />
   </form>
+
   <form class="token" v-else>
     <h3>Credentials for {{ name }}</h3>
     <label>User:</label><code>{{ assignment.user }}</code>
     <label>Password:</label><code>{{ assignment.password }}</code>
+    <p></p> <p></p>
+    <button @click="newAssignment">Back...</button>
   </form>
+
 
   <div v-if="assignment.failed" class="failed">
     {{ assignment.failed }}
@@ -47,8 +51,8 @@ const app = Vue.createApp ({
 
   data() {
     return {
-      name: new URL(location.href).searchParams.get('name'),
-      session_ID: new URL(location.href).searchParams.get('session') || 'TechEd-AD264',
+      name: new URL(location.href).searchParams.get('name') || localStorage.getItem('assignment-name'),
+      session_ID: new URL(location.href).searchParams.get('session') || localStorage.getItem('session'),
       assignment: {},
     }
   },
@@ -61,16 +65,20 @@ const app = Vue.createApp ({
         const res = await POST(`/SessionAssignments`, { name, session_ID })
         app.assignment = res.data
 
-        const url = new URL(location.href)
-        url.searchParams.set('name', name)
-        url.searchParams.set('session', session_ID)
-        history.pushState(null, '', url)
+        localStorage.setItem('assignment-name', name)
+        localStorage.setItem('session', session_ID)
 
         app.getAssignment()
 
       } catch (e) {
         app.assignment = { failed: e.response.data.error ? e.response.data.error.message : e.response.data }
       }
+    },
+
+    async newAssignment() {
+      app.assignment = {}
+      app.name = undefined
+      localStorage.removeItem('assignment-name')
     },
 
     async getAssignment() {
