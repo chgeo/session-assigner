@@ -7,45 +7,62 @@
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.prod.js"></script>
   <style>
-    .hovering tr:hover td { color: blue; cursor: pointer; }
-    .assigned { background-color: #00d000;}
+    .hovering tr:hover td { cursor: pointer; }
+    .highlight { background: #ebeefc !important; }
+    .highlight-assignment { background: darkgreen !important; color: white;}
+    .assigned { background-color: #00d000; }
     .failed { color:red; }
     code { border: none !important; }
+    button:disabled { opacity: 0.3; cursor: default; }
   </style>
 </head>
 
 <body class="medium-container">
 <div id='app'>
 
-  <h3>Session: {{ session_ID }}</h3>
-  <div v-if="session">
+  <div v-if="error" class="failed">
+    {{ error }}
+  </div>
 
-    <span v-if="session.descr">{{ session.descr }}</span> <br>
-    Number range: {{ session.rangeFrom }} - {{ session.rangeTo }} <br>
-    User pattern: <code>{{ session.userPattern }}</code> <br>
-    Password pattern: <code>{{ session.passwordPattern }}</code> <br>
-
-    <h5>Participant assignments</h5>
-    <div style="width: 100%; display: flex; justify-content: space-between;">
-      {{ freeSlots }} slots left
-      <a :href="`../assign/?session=${encodeURIComponent(session.ID)}`">New Assignment</a>
-    </div>
-
-    <table id='assignments' class="hovering">
+  <div>
+    <h4>Sessions</h4>
+    <table id='sessions' class="hovering">
       <thead>
-          <th> Number </th>
-          <th> Name </th>
+        <th>ID</th>
+        <th>Description</th>
+        <th>Range</th>
+        <th>User Pattern</th>
+        <th>Password Pattern</th>
       </thead>
-      <tr v-for="assignment in assignments" :class="{ 'assigned' : !!assignment.name }">
-          <td>{{ assignment.token }}</td>
-          <td>{{ assignment.name }}</td>
+      <tr v-for="s in sessions" :key="s.ID" @click="selectSession" :class="{'highlight': (s.ID === session?.ID)}">
+        <td>{{ s.ID }}</td>
+        <td>{{ s.descr }}</td>
+        <td>{{ s.rangeFrom }} - {{ s.rangeTo }}</td>
+        <td><code>{{ s.userPattern }}</code></td>
+        <td><code>{{ s.passwordPattern }}</code></td>
       </tr>
     </table>
   </div>
 
+  <div v-if="session">
+    <h5>Participant assignments</h5>
+    <div style="width: 100%; display: flex; justify-content: space-between;">
+      {{ freeSlots }} slots left out of {{ slotCount }}
+      <button @click="newAssignment" :disabled="!assignment || assignment.name.length">Assign</button>
+      <button @click="deleteAssignment" :disabled="!assignment?.name">Delete</button>
+    </div>
 
-  <div v-if="error" class="failed">
-    {{ error }}
+    <table id='assignments' class="hovering">
+      <thead>
+        <th> Number </th>
+        <th> Name </th>
+      </thead>
+      <tr v-for="a in assignments" :key="a.token" @click="selectAssignment"
+          :class="{ 'assigned' : !!a.name, 'highlight-assignment': (a.token === assignment?.token) }">
+        <td>{{ a.token }}</td>
+        <td>{{ a.name }}</td>
+      </tr>
+    </table>
   </div>
 
 </div>
@@ -56,49 +73,118 @@
 const $ = sel => document.querySelector(sel)
 const GET = (url) => axios.get('/api/moderator'+url)
 const POST = (cmd,data) => axios.post('/api/moderator'+cmd,data)
+const DELETE = (url) => axios.delete('/api/moderator'+url)
 
 const app = Vue.createApp ({
 
   data() {
     return {
-      session_ID: new URL(location.href).searchParams.get('session') ||  localStorage.getItem('session'),
-      assignments: [],
+      sessions: [],
+      session_ID: new URL(location.href).searchParams.get('session') || localStorage.getItem('session'),
       session: undefined,
+      assignments: [],
+      assignment: undefined,
       error: undefined
     }
   },
   computed: {
+    slotCount() {
+      if (!app.session) return 0
+      return app.session.rangeTo - app.session.rangeFrom + 1
+    },
     freeSlots() {
       if (!app.session) return 0
-      return app.session.rangeTo - app.session.rangeFrom - app.session.assignments.length + 1
+      return app.slotCount - app.session.assignments.length
     }
   },
 
   methods: {
 
-    async list () {
+    async listSessions () {
       app.error = undefined
-      const { session_ID } = app
       try {
-        const session = (await GET(`/Sessions/${session_ID}?$expand=assignments`)).data
-        app.session = session
-        app.assignments = Array.apply(null, Array(session.rangeTo - session.rangeFrom + 1))
-          .map((e, i) => ({ name: '', token: i + session.rangeFrom }))
-
-        for (const assignment of session.assignments) {
-          app.assignments[assignment.token - session.rangeFrom] = assignment
-        }
-
-        localStorage.setItem('session', session_ID)
+        app.sessions = (await GET(`/Sessions?$expand=assignments`)).data
       } catch (e) {
         app.error = e.response.data.error ? e.response.data.error.message : e.response.data
       }
     },
 
+    async selectSession (e) {
+      app.session = app.sessions[e.currentTarget.rowIndex-1]
+      app.session_ID = app.session.ID
+      localStorage.setItem('session', app.session_ID)
+      app.listAssignments()
+    },
+
+    async listAssignments () {
+      app.error = undefined
+      const { session_ID } = app
+      try {
+        const session = (await GET(`/Sessions/${session_ID}?$expand=assignments`)).data
+        app.session = session
+        localStorage.setItem('session', session_ID)
+
+        // fill whole table w/ dummy entries
+        app.assignments = Array.apply(null, Array(session.rangeTo - session.rangeFrom + 1))
+          .map((e, i) => ({ name: '', token: i + session.rangeFrom }))
+        // now set existing entries
+        for (const assignment of session.assignments) {
+          app.assignments[assignment.token - session.rangeFrom] = assignment
+        }
+
+        // make sure one is selected
+        if (app.assignment) {
+          app.assignment = session.assignments.find(a => a.name === app.assignment.name)
+        } else if (localStorage.getItem('assignment-name')) {
+          const name = localStorage.getItem('assignment-name')
+          app.assignment = session.assignments.find(a => a.name === name)
+        }
+        // fallback selection
+        if (!app.assignment) {
+          app.assignment = session.assignments.find(a => a.name)
+        }
+      } catch (e) {
+        app.error = e.response.data.error ? e.response.data.error.message : e.response.data
+      }
+    },
+
+    async selectAssignment (e) {
+      app.assignment = app.assignments[e.currentTarget.rowIndex-1]
+      localStorage.setItem('assignment-name', app.assignment.name)
+    },
+
+    async deleteAssignment () {
+      app.error = undefined
+      if (app.assignment?.name) {
+        try {
+          await DELETE(`/SessionAssignments(name='${encodeURIComponent(app.assignment.name)}',session_ID='${encodeURIComponent(app.session_ID)}')`)
+          app.assignment = undefined
+          app.listAssignments()
+        } catch (e) {
+          app.error = e.response.data.error ? e.response.data.error.message : e.response.data
+        }
+      }
+    },
+
+    async newAssignment () {
+      app.error = undefined
+      if (app.assignment) {
+        const name = app.assignment.name || 'name'+app.assignment.token
+        try {
+          const res = await POST(`/SessionAssignments`, { name, session_ID:app.session_ID, token:app.assignment.token })
+          app.assignment = res.data
+          localStorage.setItem('assignment-name', name)
+          app.listAssignments()
+        } catch (e) {
+          app.error = e.response.data.error ? e.response.data.error.message : e.response.data
+        }
+      }
+    },
   }
 }).mount('#app')
 
-app.list()
+app.listSessions()
+app.listAssignments()
 
 </script>
 

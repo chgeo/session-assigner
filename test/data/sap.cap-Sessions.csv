@@ -1,3 +1,4 @@
 ID,descr,rangeFrom,rangeTo,userPattern,passwordPattern
 Test Session,A TechEd hands-on session,1,40,user-<token>@email.test,Abc-<token>
 CAP Hands-on,A session for CAP people,50,80,user-<token>@email.test,Abc-<token>
+Test session 2,,90,100,user-<token>@email.test,Abc-<token>

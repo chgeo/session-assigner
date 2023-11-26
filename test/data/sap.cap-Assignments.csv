@@ -1,4 +1,5 @@
 name,session_ID,token
 Chris,Test Session,2
 Alice,Test Session,4
-Jane,Test Session,5
+Jane,Test Session,5,
+Bob,CAP Hands-on,50
