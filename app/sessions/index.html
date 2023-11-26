@@ -10,6 +10,7 @@
     .hovering tr:hover td { color: gold; cursor: pointer; }
     .assigned { background-color: #00d000;}
     .failed { color:red; }
+    code { border: none !important; }
   </style>
 </head>
 
@@ -19,9 +20,10 @@
   <h3>Session: {{ session_ID }}</h3>
   <div v-if="session">
 
-    {{ session.descr }} <br>
+    <span v-if="session.descr">{{ session.descr }}</span> <br>
     Number range: {{ session.rangeFrom }} - {{ session.rangeTo }} <br>
-    User pattern: <code>{{ session.userPattern }}</code>, Password pattern: <code>{{ session.passwordPattern }}</code> <br>
+    User pattern: <code>{{ session.userPattern }}</code> <br>
+    Password pattern: <code>{{ session.passwordPattern }}</code> <br>
 
     <h5>Participant assignments</h5>
     {{ freeSlots }} slots left

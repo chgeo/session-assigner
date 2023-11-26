@@ -8,6 +8,7 @@
   <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.prod.js"></script>
   <style>
     .failed { color:red }
+    code { border: none !important; }
   </style>
 </head>
 
@@ -25,12 +26,8 @@
   </form>
   <form class="token" v-else>
     <h3>Credentials for {{ name }}</h3>
-    <label>
-      User: <input type="text" name="user" v-model="assignment.user" readonly />
-    </label>
-    <label>
-      Password: <input type="text" name="password" v-model="assignment.password" readonly />
-    </label>
+    <label>User:</label><code>{{ assignment.user }}</code>
+    <label>Password:</label><code>{{ assignment.password }}</code>
   </form>
 
   <div v-if="assignment.failed" class="failed">
