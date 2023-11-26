@@ -47,9 +47,11 @@
   <div v-if="session">
     <h5>Participant assignments</h5>
     <div style="width: 100%; display: flex; justify-content: space-between;">
-      {{ freeSlots }} slots left out of {{ slotCount }}
-      <button @click="newAssignment" :disabled="!assignment || assignment.name.length">Assign</button>
-      <button @click="deleteAssignment" :disabled="!assignment?.name">Delete</button>
+      <div>{{ freeSlots }} slots left out of {{ slotCount }}</div>
+      <div style="width: 20%; display: flex; gap: 10px;">
+        <button @click="newAssignment" :disabled="!assignment || assignment.name.length">Assign</button>
+        <button @click="deleteAssignment" :disabled="!assignment?.name">Delete</button>
+      </div>
     </div>
 
     <table id='assignments' class="hovering">
