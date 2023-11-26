@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Session Management</title>
+  <link rel="stylesheet" href="https://unpkg.com/primitive-ui/dist/css/main.css">
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.prod.js"></script>
+  <style>
+    .hovering tr:hover td { color: gold; cursor: pointer; }
+    .assigned { background-color: #00d000;}
+    .failed { color:red; }
+  </style>
+</head>
+
+<body class="medium-container">
+<div id='app'>
+
+  <h3>Session: {{ session_ID }}</h3>
+  <div v-if="session">
+
+    {{ session.descr }} <br>
+    Number range: {{ session.rangeFrom }} - {{ session.rangeTo }} <br>
+    User pattern: <code>{{ session.userPattern }}</code>, Password pattern: <code>{{ session.passwordPattern }}</code> <br>
+
+    <h5>Participant assignments</h5>
+    {{ freeSlots }} slots left
+
+    <table id='assignments' class="hovering">
+      <thead>
+          <th> Number </th>
+          <th> Name </th>
+      </thead>
+      <tr v-for="assignment in assignments" :class="{ 'assigned' : !!assignment.name }">
+          <td>{{ assignment.token }}</td>
+          <td>{{ assignment.name }}</td>
+      </tr>
+    </table>
+  </div>
+
+
+  <div v-if="error" class="failed">
+    {{ error }}
+  </div>
+
+</div>
+</body>
+
+<script>
+/* global Vue axios */ //> from vue.html
+const $ = sel => document.querySelector(sel)
+const GET = (url) => axios.get('/api/moderator'+url)
+const POST = (cmd,data) => axios.post('/api/moderator'+cmd,data)
+
+const app = Vue.createApp ({
+
+  data() {
+    return {
+      session_ID: new URL(location.href).searchParams.get('session') || 'TechEd-AD264',
+      assignments: [],
+      session: undefined,
+      error: undefined
+    }
+  },
+  computed: {
+    freeSlots() {
+      if (!app.session) return 0
+      return app.session.rangeTo - app.session.rangeFrom - app.session.assignments.length + 1
+    }
+  },
+
+  methods: {
+
+    async list () {
+      app.error = undefined
+      const { session_ID } = app
+      try {
+        const session = (await GET(`/Sessions/${session_ID}?$expand=assignments`)).data
+        app.session = session
+        app.assignments = Array.apply(null, Array(session.rangeTo - session.rangeFrom + 1))
+          .map((e, i) => ({ name: '', token: i + session.rangeFrom }))
+
+        for (const assignment of session.assignments) {
+          app.assignments[assignment.token - session.rangeFrom] = assignment
+        }
+
+        const url = new URL(location.href)
+        url.searchParams.set('session', session_ID)
+        history.pushState(null, '', url)
+      } catch (e) {
+        app.error = e.response.data.error ? e.response.data.error.message : e.response.data
+      }
+    },
+
+  }
+}).mount('#app')
+
+app.list()
+
+</script>
+
+</html>
