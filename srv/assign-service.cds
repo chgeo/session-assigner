@@ -6,12 +6,19 @@ service AssignService {
 
   @Capabilities : { ReadRestrictions : {
     Readable:false,
-    ReadByKeyRestrictions : { Readable:true },
-  }, }
+    ReadByKeyRestrictions : { Readable },
+  }}
   entity SessionAssignments as projection on cap.Assignments
     actions {
       function credentials() returns Creds
     }
+
+  @readonly
+  @Capabilities : { ReadRestrictions : {
+    Readable:false,
+    ReadByKeyRestrictions : { Readable },
+  }}
+  entity Sessions as projection on cap.Sessions;
 
   type Creds {
     token    : Integer;
