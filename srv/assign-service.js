@@ -20,15 +20,41 @@ class AssignService extends cds.ApplicationService { init(){
   this.after ('CREATE', SessionAssignments, async ({ name, session_ID }, req) => {
     const session = await SELECT.one.from(Sessions).byKey({ID: session_ID})
     if (!session)  return req.reject(404, `No such session: ${session_ID}`)
-    const { rangeFrom, rangeTo } = session
 
-    const { max } = await SELECT.one('max(token) as max').from(Assignments).byKey({ session_ID }).forUpdate()
-    if (max >= rangeTo)  return req.reject(400, `No more numbers: reached allowed limit of ${rangeTo}`)
+    const tokens = await findFreeTokens(session)
+    if (!tokens.length) {
+      return req.reject(400, `No more numbers: reached allowed limit of ${session.rangeTo}`)
+    }
 
-    const token = max ? max + 1 : rangeFrom
-    await UPDATE(Assignments).byKey({ name, session_ID }).with({ token })
-    return req.reply({ name, session_ID, token })
+    // try all token candidates, to compensate collisions with parallel requests
+    for (let i = 0; i < tokens.length; i++) {
+      const token = tokens[i]
+      try {
+        await UPDATE(Assignments).byKey({ name, session_ID }).with({ token })
+      } catch (err) {
+        if (i+1 === tokens.length) {
+          // give up, parallel requests have consumed all free tokens
+          throw err
+        }
+      }
+      return req.reply({ name, session_ID, token })
+    }
   })
+
+  async function findFreeTokens(session) {
+    const { ID: session_ID, rangeFrom, rangeTo } = session
+
+    // try to find an unused token somwhere within the range
+    const tokensFree = []
+    const tokens = (await SELECT.from(Assignments).columns(a => { a.token }).where({ session_ID }))
+      .map(res => res.token)
+    for (let i = rangeFrom; i <= rangeTo; i++) {
+      if (!tokens.includes(i)) {
+        tokensFree.push(i)
+      }
+    }
+    return tokensFree
+  }
 
   this.on ('credentials', SessionAssignments, async req => {
     const { name, session_ID } = req.params[0]
