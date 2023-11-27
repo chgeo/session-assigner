@@ -10,7 +10,7 @@ service AssignService {
   }}
   entity SessionAssignments as projection on cap.Assignments
     actions {
-      function credentials() returns Creds
+      function credentials(in: $self) returns Creds
     }
 
   @readonly

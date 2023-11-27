@@ -2,7 +2,7 @@ const cds = require('@sap/cds')
 
 class AssignService extends cds.ApplicationService { init(){
 
-  const { SessionAssignments } = require('#cds-models/AssignService')
+  const { SessionAssignments, SessionAssignment } = require('#cds-models/AssignService')
   const { Assignments, Sessions } = require('#cds-models/sap/cap')
 
   // auto-fill name w/ a unique value, just to ease testing
@@ -17,30 +17,39 @@ class AssignService extends cds.ApplicationService { init(){
 
 
   // fill in unique token
-  this.after ('CREATE', SessionAssignments, async ({ name, session_ID }, req) => {
-    const session = await SELECT.one.from(Sessions).byKey({ID: session_ID})
-    if (!session)  return req.reject(404, `No such session: ${session_ID}`)
+  this.after ('CREATE', SessionAssignments, async (data, req) => {
+    const assignments = Array.isArray(data) ? data : [data]
+    for (const assignment of assignments) {
+      const { name, session_ID} = assignment
+      const session = await SELECT.one.from(Sessions).byKey({ID: session_ID})
+      if (!session)  return req.reject(404, `No such session: ${session_ID}`)
 
-    const tokens = await findFreeTokens(session)
-    if (!tokens.length) {
-      return req.reject(400, `No more numbers: reached allowed limit of ${session.rangeTo}`)
-    }
-
-    // try all token candidates, to compensate collisions with parallel requests
-    for (let i = 0; i < tokens.length; i++) {
-      const token = tokens[i]
-      try {
-        await UPDATE(Assignments).byKey({ name, session_ID }).with({ token })
-      } catch (err) {
-        if (i+1 === tokens.length) {
-          // give up, parallel requests have consumed all free tokens
-          throw err
-        }
+      const tokens = await findFreeTokens(session)
+      if (!tokens.length) {
+        return req.reject(400, `No more numbers: reached allowed limit of ${session.rangeTo}`)
       }
-      return req.reply({ name, session_ID, token })
+
+      // try all token candidates, to compensate collisions with parallel requests
+      for (let i = 0; i < tokens.length; i++) {
+        const token = tokens[i]
+        try {
+          await UPDATE(Assignments).byKey({ name, session_ID }).with({ token })
+        } catch (err) {
+          if (i+1 === tokens.length) {
+            // give up, parallel requests have consumed all free tokens
+            throw err
+          }
+        }
+        return req.reply({ name, session_ID, token })
+      }
     }
   })
 
+  this.on ('credentials', SessionAssignment, credentials)
+
+  /**
+   * @param {import('#cds-models/AssignService').Session} session
+   */
   async function findFreeTokens(session) {
     const { ID: session_ID, rangeFrom, rangeTo } = session
 
@@ -56,20 +65,27 @@ class AssignService extends cds.ApplicationService { init(){
     return tokensFree
   }
 
-  this.on ('credentials', SessionAssignments, async req => {
-    const { name, session_ID } = req.params[0]
+  /**
+   * @param {import('@sap/cds').Request} req
+   * @returns {Promise<import('#cds-models/AssignService').Creds|Error>}
+   */
+  async function credentials (req) {
+    /** @type { import('#cds-models/AssignService').SessionAssignment } */
+    // @ts-ignore
+    const boundAssignment = req.params[0]
+    const { name, session_ID } = boundAssignment
     const assignment = await SELECT.one.from(Assignments).byKey({ name, session_ID })
-    if (!assignment)  return req.reject(404, `No such assignment '${name}' in session '${session_ID}'`)
+    if (!assignment) return req.reject(404, `No such assignment '${name}' in session '${session_ID}'`)
     const { token } = assignment
 
-    const session = await SELECT.one.from(Sessions).byKey({ID: session_ID})
-    if (!session)  return req.reject(404, `No session data for '${session_ID}'`)
+    const session = await SELECT.one.from(Sessions).byKey({ ID: session_ID })
+    if (!session) return req.reject(404, `No session data for '${session_ID}'`)
     return {
       token,
-      user: session.userPattern.replace('<token>', token),
-      password: session.passwordPattern.replace('<token>', token)
+      user: session.userPattern.replace('<token>', '' + token),
+      password: session.passwordPattern.replace('<token>', '' + token)
     }
-  })
+  }
 
   return super.init()
 }}
