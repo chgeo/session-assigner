@@ -2,7 +2,7 @@ const cds = require('@sap/cds')
 
 class ModeratorService extends cds.ApplicationService { init(){
 
-  const { Sessions } = require('#cds-models/ModeratorService')
+  const { Sessions, SessionAssignments } = require('#cds-models/ModeratorService')
 
   // auto-fill name w/ a unique value, just to ease testing
   this.before ('CREATE', Sessions, ({ data }) => {
@@ -23,6 +23,10 @@ class ModeratorService extends cds.ApplicationService { init(){
     }
   })
 
+  this.after(['CREATE', 'UPDATE'], SessionAssignments, (data) => {
+    // @ts-ignore
+    cds.emit('assignment.changed', data)
+  })
 
   return super.init()
 }}

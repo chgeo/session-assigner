@@ -284,6 +284,15 @@ const app = Vue.createApp ({
   }
 }).mount('#app')
 
+const wsURL = (location.protocol === 'https:' ? 'wss:' : 'ws:') + `//${location.host}`
+const ws = new WebSocket(wsURL)
+ws.addEventListener('message', debounce((event) => {
+  const payload = JSON.parse(event.data)
+  if (payload.type === 'assignment.changed' && payload.data.session_ID === app.session?.ID) {
+    app.listAssignments()
+  }
+}))
+
 app.listSessions()
 app.listAssignments()
 
@@ -296,6 +305,14 @@ async function handleErrors(fn) {
     else
       app.error = e.message
   }
+}
+
+function debounce(func, timeout = 300) {
+  let timer
+  return (...args) => {
+    clearTimeout(timer)
+    timer = setTimeout(() => { func.apply(this, args) }, timeout)
+  };
 }
 
 </script>

@@ -47,6 +47,11 @@ class AssignService extends cds.ApplicationService { init(){
 
   this.on ('credentials', SessionAssignment, credentials)
 
+  this.after(['CREATE', 'UPDATE'], SessionAssignments, (data) => {
+    // @ts-ignore
+    cds.emit('assignment.changed', data)
+  })
+
   /**
    * @param {import('#cds-models/AssignService').Session} session
    */
