@@ -131,18 +131,16 @@ const app = Vue.createApp ({
 
     async listSessions () {
       app.error = undefined
-      try {
+      await handleErrors(async () => {
         app.sessions = (await GET(`/Sessions?$expand=assignments`)).data
-      } catch (e) {
-        app.error = e.response.data.error ? e.response.data.error.message : e.response.data
-      }
+      })
     },
 
     async selectSession (e) {
       app.session = app.sessions[e.currentTarget.rowIndex-1]
       app.session_ID = app.session.ID
       localStorage.setItem('session', app.session_ID)
-      app.listAssignments()
+      await app.listAssignments()
     },
 
     async newSession () {
@@ -157,23 +155,21 @@ const app = Vue.createApp ({
     async createSession (evt) {
       app.error = undefined
       if (app.newSessionTemplate) {
-        try {
+        await handleErrors(async () => {
           const res = await POST(`/Sessions`, app.newSessionTemplate)
           app.session = res.data
           app.session_ID = app.session.ID
           localStorage.setItem('session', app.session.ID)
           await app.listSessions()
           await app.listAssignments()
-        } catch (e) {
-          app.error = e.response.data.error ? e.response.data.error.message : e.response.data
-        }
+        })
       }
     },
 
     async listAssignments () {
       app.error = undefined
       const { session_ID } = app
-      try {
+      await handleErrors(async () => {
         const session = (await GET(`/Sessions/${session_ID}?$expand=assignments`)).data
         app.session = session
         localStorage.setItem('session', session_ID)
@@ -197,9 +193,7 @@ const app = Vue.createApp ({
         if (!app.assignment) {
           app.assignment = session.assignments.find(a => a.name)
         }
-      } catch (e) {
-        app.error = e.response.data.error ? e.response.data.error.message : e.response.data
-      }
+      })
     },
 
     async selectAssignment (e) {
@@ -210,13 +204,11 @@ const app = Vue.createApp ({
     async deleteAssignment () {
       app.error = undefined
       if (app.assignment?.name) {
-        try {
+        await handleErrors(async () => {
           await DELETE(`/SessionAssignments(name='${encodeURIComponent(app.assignment.name)}',session_ID='${encodeURIComponent(app.session_ID)}')`)
           app.assignment = undefined
-          app.listAssignments()
-        } catch (e) {
-          app.error = e.response.data.error ? e.response.data.error.message : e.response.data
-        }
+          await app.listAssignments()
+        })
       }
     },
 
@@ -224,14 +216,12 @@ const app = Vue.createApp ({
       app.error = undefined
       if (app.assignment) {
         const name = app.assignment.name || 'name'+app.assignment.token
-        try {
+        await handleErrors(async () => {
           const res = await POST(`/SessionAssignments`, { name, session_ID:app.session_ID, token:app.assignment.token })
           app.assignment = res.data
           localStorage.setItem('assignment-name', name)
-          app.listAssignments()
-        } catch (e) {
-          app.error = e.response.data.error ? e.response.data.error.message : e.response.data
-        }
+          await app.listAssignments()
+        })
       }
     },
   }
@@ -239,6 +229,17 @@ const app = Vue.createApp ({
 
 app.listSessions()
 app.listAssignments()
+
+async function handleErrors(fn) {
+  try {
+    return await fn()
+  } catch (e) {
+    if (e.response)
+      app.error = e.response.data.error ? e.response.data.error.message : e.response.data
+    else
+      app.error = e.message
+  }
+}
 
 </script>
 
