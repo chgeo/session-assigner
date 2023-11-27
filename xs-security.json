@@ -1,5 +1,19 @@
 {
-  "scopes": [],
+  "scopes": [
+    {
+      "name": "$XSAPPNAME.moderator",
+      "description": "moderator"
+    }
+  ],
   "attributes": [],
-  "role-templates": []
+  "role-templates": [
+    {
+      "name": "moderator",
+      "description": "generated",
+      "scope-references": [
+        "$XSAPPNAME.moderator"
+      ],
+      "attribute-references": []
+    }
+  ]
 }

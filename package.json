@@ -22,6 +22,9 @@
     "chai-as-promised": "^7.1.1",
     "chai-subset": "^1.6.0"
   },
+  "engines": {
+    "node": "^20"
+  },
   "scripts": {
     "build": "cds-typer '*' --outputDirectory @cds-models",
     "start": "cds-serve",
@@ -35,6 +38,15 @@
       "[production]": {
         "db": "hana",
         "auth": "xsuaa"
+      },
+      "auth": {
+        "users": {
+          "alice": {
+            "roles": [
+              "moderator"
+            ]
+          }
+        }
       }
     }
   }
