@@ -1,5 +1,8 @@
 {
   "welcomeFile": "app/assign/index.html",
+  "websockets": {
+    "enabled": true
+  },
   "routes": [
     {
       "source": "^/app/(assign/.*)$",
