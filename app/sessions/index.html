@@ -27,23 +27,44 @@
   <dialog id="newSessionDialog">
     <p>New Session</p>
     <form method="dialog">
-      <input type="text" name="ID" v-model="newSessionTemplate.ID" required placeholder="ID"/>
-      <input type="text" name="descr" v-model="newSessionTemplate.descr" placeholder="Description"/>
+      <input type="text" name="ID" v-model="sessionTemplate.ID" required placeholder="ID"/>
+      <input type="text" name="descr" v-model="sessionTemplate.descr" placeholder="Description"/>
       <label>
         Range from / to
         <div style="width: 100%; display: flex; justify-content: space-between; gap: 10px;">
-          <input type="number" name="rangeFrom" v-model="newSessionTemplate.rangeFrom" required placeholder="Range from"/>
-          <input type="number" name="rangeTo" v-model="newSessionTemplate.rangeTo" required placeholder="Range to"/>
+          <input type="number" name="rangeFrom" v-model="sessionTemplate.rangeFrom" required placeholder="Range from"/>
+          <input type="number" name="rangeTo" v-model="sessionTemplate.rangeTo" required placeholder="Range to"/>
         </div>
       </label>
       <label>
         User / password pattern
         <div style="width: 100%; display: flex; justify-content: space-between; gap: 10px;">
-          <input type="text" name="userPattern" v-model="newSessionTemplate.userPattern" required placeholder="User pattern"/>
-          <input type="text" name="passwordPattern" v-model="newSessionTemplate.passwordPattern" required placeholder="Password pattern"/>
+          <input type="text" name="userPattern" v-model="sessionTemplate.userPattern" required placeholder="User pattern"/>
+          <input type="text" name="passwordPattern" v-model="sessionTemplate.passwordPattern" required placeholder="Password pattern"/>
         </div>
       </label>
       <button @click="createSession">OK</button>
+    </form>
+  </dialog>
+  <dialog id="updateSessionDialog">
+    <p>Update Session</p>
+    <form method="dialog">
+      <input type="text" name="descr" v-model="sessionTemplate.descr" placeholder="Description"/>
+      <label>
+        Range from / to
+        <div style="width: 100%; display: flex; justify-content: space-between; gap: 10px;">
+          <input type="number" name="rangeFrom" v-model="sessionTemplate.rangeFrom" required placeholder="Range from"/>
+          <input type="number" name="rangeTo" v-model="sessionTemplate.rangeTo" required placeholder="Range to"/>
+        </div>
+      </label>
+      <label>
+        User / password pattern
+        <div style="width: 100%; display: flex; justify-content: space-between; gap: 10px;">
+          <input type="text" name="userPattern" v-model="sessionTemplate.userPattern" required placeholder="User pattern"/>
+          <input type="text" name="passwordPattern" v-model="sessionTemplate.passwordPattern" required placeholder="Password pattern"/>
+        </div>
+      </label>
+      <button @click="doUpdateSession">OK</button>
     </form>
   </dialog>
 
@@ -67,6 +88,7 @@
     </table>
     <div style="width: 100%; display: flex; justify-content: flex-end; gap: 10px;">
       <button @click="newSession">New ...</button>
+      <button @click="updateSession">Update ...</button>
       <button @click="deleteSession">Delete</button>
     </div>
   </div>
@@ -102,6 +124,7 @@
 const $ = sel => document.querySelector(sel)
 const GET = (url) => axios.get('/api/moderator'+url)
 const POST = (cmd,data) => axios.post('/api/moderator'+cmd,data)
+const PATCH = (cmd,data) => axios.patch('/api/moderator'+cmd,data)
 const DELETE = (url) => axios.delete('/api/moderator'+url)
 
 const app = Vue.createApp ({
@@ -111,7 +134,7 @@ const app = Vue.createApp ({
       sessions: [],
       session_ID: new URL(location.href).searchParams.get('session') || localStorage.getItem('session'),
       session: undefined,
-      newSessionTemplate: {ID: '', descr: '', rangeFrom: 1, rangeTo: 20, userPattern: 'user-<token>@email', passwordPattern: 'Abc<token>'},
+      sessionTemplate: {ID: '', descr: '', rangeFrom: 1, rangeTo: 20, userPattern: 'user-<token>@email', passwordPattern: 'Abc<token>'},
       assignments: [],
       assignment: undefined,
       error: undefined
@@ -146,21 +169,39 @@ const app = Vue.createApp ({
 
     async newSession () {
       if (app.session) {
-        app.newSessionTemplate = Object.assign({}, app.session)
-        app.newSessionTemplate.assignments = []
+        app.sessionTemplate = Object.assign({}, app.session)
+        app.sessionTemplate.assignments = []
       }
       const dialog = document.querySelector('#newSessionDialog')
       dialog.showModal()
     },
+    async updateSession () {
+      if (app.session) {
+        app.sessionTemplate = Object.assign({}, app.session)
+      }
+      const dialog = document.querySelector('#updateSessionDialog')
+      dialog.showModal()
+    },
 
-    async createSession (evt) {
+    async createSession () {
       app.error = undefined
-      if (app.newSessionTemplate) {
+      if (app.sessionTemplate) {
         await handleErrors(async () => {
-          const res = await POST(`/Sessions`, app.newSessionTemplate)
+          const res = await POST(`/Sessions`, app.sessionTemplate)
           app.session = res.data
           app.session_ID = app.session.ID
           localStorage.setItem('session', app.session.ID)
+          await app.listSessions()
+          await app.listAssignments()
+        })
+      }
+    },
+    async doUpdateSession () {
+      app.error = undefined
+      if (app.sessionTemplate) {
+        await handleErrors(async () => {
+          const res = await PATCH(`/Sessions/${app.sessionTemplate.ID}`, app.sessionTemplate)
+          app.session = res.data
           await app.listSessions()
           await app.listAssignments()
         })
