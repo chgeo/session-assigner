@@ -8,11 +8,15 @@
   "dependencies": {
     "@sap/cds": "^7",
     "express": "^4",
-    "ws": "^8.14.2"
+    "ws": "^8.14.2",
+    "@sap/cds-hana": "^2",
+    "@sap/xssec": "^3",
+    "passport": "^0"
   },
   "devDependencies": {
     "@cap-js/cds-typer": ">=0.1",
     "@cap-js/sqlite": "^1",
+    "@sap/cds-dk": "^7",
     "axios": "^1.6.2",
     "chai": "^4.3.10",
     "chai-as-promised": "^7.1.1",
@@ -25,5 +29,13 @@
   },
   "imports": {
     "#cds-models/*": "./@cds-models/*/index.js"
+  },
+  "cds": {
+    "requires": {
+      "[production]": {
+        "db": "hana",
+        "auth": "xsuaa"
+      }
+    }
   }
 }
