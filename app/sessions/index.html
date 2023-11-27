@@ -65,8 +65,9 @@
         <td><code>{{ s.passwordPattern }}</code></td>
       </tr>
     </table>
-    <div style="width: 100%; display: flex; justify-content: flex-end;">
+    <div style="width: 100%; display: flex; justify-content: flex-end; gap: 10px;">
       <button @click="newSession">New ...</button>
+      <button @click="deleteSession">Delete</button>
     </div>
   </div>
 
@@ -166,9 +167,24 @@ const app = Vue.createApp ({
       }
     },
 
+    async deleteSession () {
+      app.error = undefined
+      if (app.session) {
+        if (!confirm(`Are you sure you want to delete session '${app.session.ID}'?`))  return
+        await handleErrors(async () => {
+          await DELETE(`/Sessions/${app.session_ID}`)
+          app.session = undefined
+          app.session_ID = undefined
+          await app.listSessions()
+          await app.listAssignments()
+        })
+      }
+    },
+
     async listAssignments () {
       app.error = undefined
       const { session_ID } = app
+      if (!session_ID)  return
       await handleErrors(async () => {
         const session = (await GET(`/Sessions/${session_ID}?$expand=assignments`)).data
         app.session = session
