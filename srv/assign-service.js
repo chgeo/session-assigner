@@ -34,13 +34,13 @@ class AssignService extends cds.ApplicationService { init(){
         const token = tokens[i]
         try {
           await UPDATE(Assignments).byKey({ name, session_ID }).with({ token })
+          return req.reply({ name, session_ID, token })
         } catch (err) {
           if (i+1 === tokens.length) {
             // give up, parallel requests have consumed all free tokens
             throw err
           }
         }
-        return req.reply({ name, session_ID, token })
       }
     }
   })
