@@ -2,6 +2,7 @@ using { sap.cap } from '../db/schema';
 
 @protocol: 'rest'
 @path: '/api/assign'
+@requires: 'any'
 service AssignService {
 
   entity SessionAssignments as projection on cap.Assignments
@@ -23,6 +24,7 @@ service AssignService {
     ReadRestrictions : { Readable: false, ReadByKeyRestrictions : { Readable } }
   }
   aspect ByKeyOnly {}
+
   extend SessionAssignments with ByKeyOnly;
   extend Sessions with ByKeyOnly;
 
