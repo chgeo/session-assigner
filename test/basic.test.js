@@ -23,3 +23,25 @@ describe('Basic flows', () => {
   })
 
 })
+
+describe('negative', () => {
+
+  const { GET, POST, expect } = cds.test (__dirname+'/..')
+
+  it.each([
+    [ 'get all sessions', GET, `/api/assign/Sessions`, 405],
+    [ 'get all assignments', GET, `/api/assign/SessionAssignments`, 405],
+    [ 'create a session', POST, `/api/assign/Sessions`, 405 ],
+
+    [ 'get sessions w/o auth', GET, `/api/moderator/Sessions`, 401 ],
+    [ 'get assignment w/o auth', GET, `/api/moderator/SessionAssignments`, 401 ],
+  ]
+  )('must not allow to %s', async (errorMessage, verb, url, expectedStatus) => {
+    try {
+      await verb(url)
+      throw new Error(errorMessage)
+    } catch (err) {
+      expect(err.response.status).to.equal(expectedStatus)
+    }
+  })
+})
