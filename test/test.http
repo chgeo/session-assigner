@@ -3,6 +3,7 @@
 
 POST http://localhost:4004/api/moderator/Sessions
 Content-Type: application/json
+Authorization: Basic alice:
 
 {
   "rangeFrom": 2,

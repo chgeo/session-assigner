@@ -1,4 +1,4 @@
-const cds = require('@sap/cds/lib')
+const cds = require('@sap/cds')
 
 describe('Basic flows', () => {
 
@@ -9,7 +9,7 @@ describe('Basic flows', () => {
       ID: 'session1',
       rangeFrom: 2,
       rangeTo: 3
-    })
+    }, { auth: { username: 'alice', password: '' }})
     expect(session).to.containSubset({ ID: 'session1' })
 
     const { data: assignment } = await POST(`/api/assign/SessionAssignments`, {
