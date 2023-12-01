@@ -26,7 +26,8 @@ class AssignService extends cds.ApplicationService { init(){
 
       const tokens = await findFreeTokens(session)
       if (!tokens.length) {
-        return req.reject(400, `No more numbers: reached allowed limit of ${session.rangeTo}`)
+        const slotCount = session.rangeTo - session.rangeFrom + 1
+        return req.reject(400, `No more numbers: reached allowed limit of ${slotCount} slots in session ${session_ID}`)
       }
 
       // try all token candidates, to compensate collisions with parallel requests
