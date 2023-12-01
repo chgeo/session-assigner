@@ -24,10 +24,10 @@
     {{ error }}
   </div>
 
-  <dialog id="newSessionDialog">
-    <p>New Session</p>
+  <dialog id="sessionDialog">
+    <p>{{ isNewSession ? 'New Session' : session_ID }}</p>
     <form method="dialog">
-      <input type="text" name="ID" v-model="sessionTemplate.ID" required placeholder="ID"/>
+      <input type="text" name="ID" v-model="sessionTemplate.ID" required placeholder="ID" v-if="isNewSession"/>
       <input type="text" name="descr" v-model="sessionTemplate.descr" placeholder="Description"/>
       <label>
         Range from / to
@@ -43,28 +43,10 @@
           <input type="text" name="passwordPattern" v-model="sessionTemplate.passwordPattern" required placeholder="Password pattern"/>
         </div>
       </label>
-      <button @click="createSession">OK</button>
-    </form>
-  </dialog>
-  <dialog id="updateSessionDialog">
-    <p>Update Session</p>
-    <form method="dialog">
-      <input type="text" name="descr" v-model="sessionTemplate.descr" placeholder="Description"/>
-      <label>
-        Range from / to
-        <div style="width: 100%; display: flex; justify-content: space-between; gap: 10px;">
-          <input type="number" name="rangeFrom" v-model="sessionTemplate.rangeFrom" required placeholder="Range from"/>
-          <input type="number" name="rangeTo" v-model="sessionTemplate.rangeTo" required placeholder="Range to"/>
-        </div>
-      </label>
-      <label>
-        User / password pattern
-        <div style="width: 100%; display: flex; justify-content: space-between; gap: 10px;">
-          <input type="text" name="userPattern" v-model="sessionTemplate.userPattern" required placeholder="User pattern"/>
-          <input type="text" name="passwordPattern" v-model="sessionTemplate.passwordPattern" required placeholder="Password pattern"/>
-        </div>
-      </label>
-      <button @click="doUpdateSession">OK</button>
+      <div style="display: flex; justify-content: end; gap: 10px;">
+        <button @click="e => isNewSession ? createSession(e) : doUpdateSession(e)">OK</button>
+        <button>Cancel</button>
+      </div>
     </form>
   </dialog>
 
@@ -135,6 +117,7 @@ const app = Vue.createApp ({
       session_ID: new URL(location.href).searchParams.get('session') || localStorage.getItem('session'),
       session: undefined,
       sessionTemplate: {ID: '', descr: '', rangeFrom: 1, rangeTo: 20, userPattern: 'user-<token>@email', passwordPattern: 'Abc<token>'},
+      isNewSession: false,
       assignments: [],
       assignment: undefined,
       error: undefined
@@ -172,14 +155,16 @@ const app = Vue.createApp ({
         app.sessionTemplate = Object.assign({}, app.session)
         app.sessionTemplate.assignments = []
       }
-      const dialog = document.querySelector('#newSessionDialog')
+      app.isNewSession = true
+      const dialog = document.querySelector('#sessionDialog')
       dialog.showModal()
     },
     async updateSession () {
       if (app.session) {
         app.sessionTemplate = Object.assign({}, app.session)
       }
-      const dialog = document.querySelector('#updateSessionDialog')
+      app.isNewSession = false
+      const dialog = document.querySelector('#sessionDialog')
       dialog.showModal()
     },
 
