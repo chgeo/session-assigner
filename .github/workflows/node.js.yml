@@ -21,3 +21,13 @@ jobs:
     - run: npm ci
     - run: npm run build
     - run: npm test
+    - name: Install k6
+      run: |
+        curl https://github.com/grafana/k6/releases/download/v0.47.0/k6-v0.47.0-linux-amd64.tar.gz -L | tar xvz --strip-components 1
+    - name: Run integration test
+      run: |
+        npm start &
+        sleep 1
+        ./k6 run test/k6-test.js
+      env:
+        PORT: 5555

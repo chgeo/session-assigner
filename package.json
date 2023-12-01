@@ -29,7 +29,8 @@
   "scripts": {
     "build": "cds-typer '*' --outputDirectory @cds-models",
     "start": "cds-serve",
-    "test": "npx -y jest --silent"
+    "test": "npx -y jest --silent",
+    "test:integration": "k6 run test/k6-test.js"
   },
   "imports": {
     "#cds-models/*": "./@cds-models/*/index.js"
